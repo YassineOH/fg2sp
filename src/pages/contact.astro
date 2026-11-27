@@ -1,0 +1,106 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import Icon from '../components/Icon.astro';
+import { site, solutions } from '../data/site';
+const field = 'mt-2 w-full rounded-xl border border-forest-900/15 bg-sand-50 px-4 py-3 text-[15px] outline-none transition focus:border-leaf-500 focus:bg-white focus:ring-4 focus:ring-leaf-500/10';
+const label = 'font-display text-sm font-semibold text-forest-900';
+---
+<Base title="Contact et devis gratuit" description="Contactez FG2SP Energie pour une étude et un devis gratuits : centrale solaire, pompage solaire, éclairage solaire partout au Maroc.">
+  <PageHero eyebrow="Contact" title="Parlons de votre projet solaire." lead="Étude et devis gratuits, sans engagement. Décrivez-nous votre besoin, nous revenons vers vous rapidement." />
+
+  <section class="relative -mt-20 pb-24 sm:-mt-28 sm:pb-32">
+    <div class="container-x relative z-10 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <form id="contact-form" class="card p-6 shadow-[0_40px_120px_-40px_rgba(0,59,31,0.35)] sm:p-10" data-reveal="zoom">
+        <div class="grid gap-5 sm:grid-cols-2">
+          <label class="block"><span class={label}>Nom complet *</span><input name="nom" required autocomplete="name" class={field} /></label>
+          <label class="block"><span class={label}>Téléphone *</span><input name="tel" required type="tel" autocomplete="tel" placeholder="06 …" class={field} /></label>
+          <label class="block"><span class={label}>E-mail</span><input name="email" type="email" autocomplete="email" class={field} /></label>
+          <label class="block"><span class={label}>Ville</span><input name="ville" autocomplete="address-level2" class={field} /></label>
+          <label class="block"><span class={label}>Type de projet</span>
+            <select name="solution" class={field}>
+              {solutions.map((s) => <option value={s.slug}>{s.title}</option>)}
+              <option value="autre">Autre / je ne sais pas encore</option>
+            </select>
+          </label>
+          <label class="block"><span class={label}>Facture mensuelle (MAD)</span><input name="facture" type="number" min="0" class={field} /></label>
+          <label class="block sm:col-span-2"><span class={label}>Votre message</span><textarea name="message" rows="5" class={field} placeholder="Ex. : villa à Marrakech, toiture terrasse d'environ 80 m², facture de 1 500 MAD en été…"></textarea></label>
+        </div>
+        <input type="hidden" name="kwc" />
+        <div class="mt-7 flex flex-col gap-3 sm:flex-row">
+          <button type="submit" data-channel="whatsapp" class="btn btn-primary flex-1"><Icon name="whatsapp" class="h-5 w-5" />Envoyer via WhatsApp</button>
+          <button type="submit" data-channel="email" class="btn btn-ghost flex-1"><Icon name="mail" class="h-5 w-5" />Envoyer par e-mail</button>
+        </div>
+        <p id="kwc-note" class="mt-4 hidden rounded-xl bg-leaf-50 px-4 py-3 text-sm text-leaf-700"></p>
+      </form>
+
+      <aside class="space-y-4" data-reveal style="--delay:150ms">
+        <a href={site.phoneHref} class="card spotlight group flex items-center gap-5 p-6 transition hover:border-leaf-500/40">
+          <span class="grid h-14 w-14 place-items-center rounded-2xl bg-leaf-500 text-white transition group-hover:scale-110"><Icon name="phone" class="h-6 w-6" /></span>
+          <span><span class="block text-sm text-ink/55">Appelez-nous</span><span class="font-display text-xl font-semibold text-forest-900">{site.phone}</span></span>
+        </a>
+        <a href={`mailto:${site.email}`} class="card spotlight group flex items-center gap-5 p-6 transition hover:border-leaf-500/40">
+          <span class="grid h-14 w-14 place-items-center rounded-2xl bg-forest-900 text-leaf-300 transition group-hover:scale-110"><Icon name="mail" class="h-6 w-6" /></span>
+          <span><span class="block text-sm text-ink/55">Écrivez-nous</span><span class="font-display text-xl font-semibold text-forest-900">{site.email}</span></span>
+        </a>
+        <div class="card flex items-center gap-5 p-6">
+          <span class="grid h-14 w-14 place-items-center rounded-2xl bg-sun-400/25 text-sun-500"><Icon name="clock" class="h-6 w-6" /></span>
+          <span><span class="block text-sm text-ink/55">Horaires</span><span class="font-display text-lg font-semibold text-forest-900">{site.hours}</span></span>
+        </div>
+        <div class="relative overflow-hidden rounded-3xl bg-forest-900 p-7 text-white">
+          <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-leaf-500/30 blur-2xl"></div>
+          <p class="relative font-display text-lg font-semibold">Pas encore d'idée de la puissance ?</p>
+          <p class="relative mt-2 text-sm text-white/70">Notre simulateur l'estime en 10 secondes à partir de votre facture.</p>
+          <a href="/simulateur/" class="btn btn-primary relative mt-5 !py-2.5">Lancer le simulateur<Icon name="arrow" class="h-4 w-4" /></a>
+        </div>
+      </aside>
+    </div>
+  </section>
+</Base>
+
+<script define:vars={{ email: site.email, whatsapp: site.whatsapp }}>
+  function initContact() {
+    const form = document.getElementById('contact-form');
+    if (!form || form.dataset.ready) return;
+    form.dataset.ready = '1';
+    const p = new URLSearchParams(location.search);
+    const set = (n, v) => { if (v && form.elements[n]) form.elements[n].value = v; };
+    set('facture', p.get('facture'));
+    set('solution', p.get('solution'));
+    set('kwc', p.get('kwc'));
+    if (p.get('kwc')) {
+      const note = document.getElementById('kwc-note');
+      note.textContent = `Résultat du simulateur joint à votre demande : environ ${Number(p.get('kwc')).toLocaleString('fr-FR')} kWc.`;
+      note.classList.remove('hidden');
+      if (p.get('profil') === 'pro') set('solution', 'centrales');
+    }
+    let channel = 'whatsapp';
+    form.querySelectorAll('[data-channel]').forEach((b) => b.addEventListener('click', () => (channel = b.dataset.channel)));
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = new FormData(form);
+      const sol = form.elements.solution.selectedOptions[0]?.textContent;
+      const lines = [
+        'Bonjour FG2SP Energie,',
+        '',
+        `Je souhaite une étude pour : ${sol}.`,
+        `Nom : ${d.get('nom')}`,
+        `Téléphone : ${d.get('tel')}`,
+        d.get('email') && `E-mail : ${d.get('email')}`,
+        d.get('ville') && `Ville : ${d.get('ville')}`,
+        d.get('facture') && `Facture mensuelle : ${d.get('facture')} MAD`,
+        d.get('kwc') && `Puissance estimée (simulateur) : ${d.get('kwc')} kWc`,
+        '',
+        d.get('message'),
+      ].filter((l) => l !== null && l !== undefined && l !== false);
+      const text = lines.join('\n');
+      if (channel === 'email') {
+        location.href = `mailto:${email}?subject=${encodeURIComponent('Demande de devis solaire – ' + d.get('nom'))}&body=${encodeURIComponent(text)}`;
+      } else {
+        window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+      }
+    });
+  }
+  document.addEventListener('astro:page-load', initContact);
+  initContact();
+</script>

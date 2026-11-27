@@ -1,0 +1,115 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { nav } from '../data/site';
+interface Props { overlay?: boolean }
+const { overlay = false } = Astro.props;
+const path = Astro.url.pathname;
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+<header
+  id="site-header"
+  data-overlay={overlay ? 'true' : 'false'}
+  class="group/header fixed inset-x-0 top-0 z-50 transition-all duration-500"
+>
+  <div class="container-x">
+    <div
+      class="header-bar mt-3 flex items-center justify-between rounded-full border px-3 py-2 pl-4 transition-all duration-500 sm:mt-4"
+    >
+      <a href="/" class="group" aria-label="FG2SP Energie — accueil">
+        <span class="logo-dark hidden"><Logo dark /></span>
+        <span class="logo-light"><Logo /></span>
+      </a>
+
+      <nav class="hidden items-center gap-1 lg:flex" aria-label="Navigation principale">
+        {nav.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              'nav-link relative rounded-full px-4 py-2 font-display text-[15px] font-medium transition-colors',
+              isActive(item.href) && 'is-active',
+            ]}
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <a href="/contact/" class="btn btn-primary hidden !px-5 !py-2.5 sm:inline-flex">
+          Devis gratuit
+          <Icon name="arrow" class="h-4 w-4" />
+        </a>
+        <button
+          id="menu-toggle"
+          class="menu-btn grid h-11 w-11 place-items-center rounded-full border transition lg:hidden"
+          aria-label="Ouvrir le menu"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <Icon name="menu" class="h-5 w-5" />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu mobile -->
+  <div
+    id="mobile-menu"
+    class="pointer-events-none fixed inset-0 z-[-1] bg-forest-950/95 opacity-0 backdrop-blur-xl transition-opacity duration-500 lg:hidden"
+  >
+    <nav class="container-x flex h-full flex-col justify-center gap-2 pt-16" aria-label="Navigation mobile">
+      {nav.map((item, i) => (
+        <a
+          href={item.href}
+          class="mobile-link font-display text-4xl font-semibold text-white/90 transition hover:text-leaf-400"
+          style={`--i:${i}`}
+        >
+          {item.label}
+        </a>
+      ))}
+      <a href="/contact/" class="btn btn-primary mobile-link mt-8 self-start" style={`--i:${nav.length}`}>Demander un devis gratuit</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  /* État transparent (au-dessus du hero sombre) */
+  #site-header[data-overlay='true']:not(.is-scrolled) .header-bar {
+    border-color: rgb(255 255 255 / 0.12);
+    background: rgb(255 255 255 / 0.04);
+    backdrop-filter: blur(10px);
+  }
+  #site-header[data-overlay='true']:not(.is-scrolled) .logo-dark { display: inline-flex; }
+  #site-header[data-overlay='true']:not(.is-scrolled) .logo-light { display: none; }
+  #site-header[data-overlay='true']:not(.is-scrolled) .nav-link { color: rgb(255 255 255 / 0.78); }
+  #site-header[data-overlay='true']:not(.is-scrolled) .nav-link:hover,
+  #site-header[data-overlay='true']:not(.is-scrolled) .nav-link.is-active { color: white; background: rgb(255 255 255 / 0.08); }
+  #site-header[data-overlay='true']:not(.is-scrolled) .menu-btn { color: white; border-color: rgb(255 255 255 / 0.2); }
+
+  /* État clair / défilé */
+  .header-bar {
+    border-color: rgb(0 59 31 / 0.08);
+    background: rgb(255 255 255 / 0.82);
+    backdrop-filter: blur(14px) saturate(1.4);
+    box-shadow: 0 10px 40px -20px rgb(0 59 31 / 0.35);
+  }
+  .nav-link { color: rgb(12 26 18 / 0.7); }
+  .nav-link:hover { color: var(--color-forest-900); background: var(--color-leaf-50); }
+  .nav-link.is-active { color: var(--color-leaf-700); background: var(--color-leaf-50); }
+  .menu-btn { color: var(--color-forest-900); border-color: rgb(0 59 31 / 0.12); }
+
+  /* Menu ouvert */
+  :global(html.menu-open) #mobile-menu { opacity: 1; pointer-events: auto; }
+  :global(html.menu-open) #site-header .logo-dark { display: inline-flex !important; }
+  :global(html.menu-open) #site-header .logo-light { display: none !important; }
+  :global(html.menu-open) #site-header .header-bar { background: transparent; border-color: transparent; box-shadow: none; }
+  :global(html.menu-open) #site-header .menu-btn { color: white; border-color: rgb(255 255 255 / 0.2); }
+  .mobile-link {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo), color 0.2s;
+    transition-delay: calc(var(--i) * 60ms);
+  }
+  :global(html.menu-open) .mobile-link { opacity: 1; transform: none; }
+</style>

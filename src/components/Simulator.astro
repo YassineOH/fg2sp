@@ -1,0 +1,249 @@
+---
+import Icon from './Icon.astro';
+import { REGIONS, MONTHS, DEFAULT_PRO_PRICE } from '../data/simulator';
+---
+<div class="sim grid overflow-hidden rounded-[2rem] border border-forest-900/10 bg-white shadow-[0_40px_120px_-40px_rgba(0,59,31,0.35)] lg:grid-cols-[1fr_1.15fr]" data-sim>
+  <!-- Saisie -->
+  <form class="flex flex-col gap-7 p-6 sm:p-10" onsubmit="return false" aria-label="Paramètres de simulation">
+    <div>
+      <p class="mb-3 font-display text-sm font-semibold text-forest-900">Vous êtes</p>
+      <div class="relative grid grid-cols-2 rounded-full bg-sand-100 p-1" role="radiogroup" aria-label="Type de client">
+        <span class="seg-pill absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-white shadow-md transition-transform duration-500 ease-out-expo" aria-hidden="true"></span>
+        <label class="relative z-10 cursor-pointer rounded-full py-2.5 text-center font-display text-sm font-semibold transition-colors">
+          <input type="radio" name="profile" value="residentiel" class="sr-only" checked />
+          Particulier
+        </label>
+        <label class="relative z-10 cursor-pointer rounded-full py-2.5 text-center font-display text-sm font-semibold transition-colors">
+          <input type="radio" name="profile" value="pro" class="sr-only" />
+          Professionnel / agricole
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <label for="sim-bill" class="flex items-baseline justify-between font-display text-sm font-semibold text-forest-900">
+        Votre facture d'électricité mensuelle
+        <span class="text-xs font-normal text-ink/50">TTC</span>
+      </label>
+      <div class="mt-3 flex items-baseline gap-2 border-b-2 border-forest-900/10 pb-2 focus-within:border-leaf-500">
+        <input id="sim-bill" type="number" inputmode="numeric" min="50" max="200000" step="10" value="900"
+          class="w-full bg-transparent font-display text-5xl font-semibold tracking-tight text-forest-900 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
+        <span class="font-display text-xl font-semibold text-ink/40">MAD</span>
+      </div>
+      <input id="sim-bill-range" type="range" min="0" max="1000" value="400" class="range mt-5" aria-label="Ajuster la facture" />
+      <div class="mt-2 flex justify-between text-xs text-ink/45"><span>100 MAD</span><span>100 000 MAD</span></div>
+    </div>
+
+    <div class="pro-only hidden">
+      <label for="sim-price" class="font-display text-sm font-semibold text-forest-900">Prix moyen du kWh (MAD TTC)</label>
+      <input id="sim-price" type="number" min="0.5" max="3" step="0.01" value={DEFAULT_PRO_PRICE}
+        class="mt-2 w-full rounded-xl border border-forest-900/15 bg-sand-50 px-4 py-3 font-display text-lg outline-none focus:border-leaf-500" />
+      <p class="mt-1.5 text-xs text-ink/50">Indiqué sur votre facture (montant ÷ kWh consommés).</p>
+    </div>
+
+    <div>
+      <label for="sim-region" class="font-display text-sm font-semibold text-forest-900">Votre région</label>
+      <div class="relative mt-2">
+        <select id="sim-region" class="w-full appearance-none rounded-xl border border-forest-900/15 bg-sand-50 px-4 py-3 pr-10 text-[15px] outline-none focus:border-leaf-500">
+          {REGIONS.map((r) => <option value={r.yield} selected={r.id === 'casa'}>{r.label}</option>)}
+        </select>
+        <svg class="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div>
+      <label for="sim-coverage" class="flex items-baseline justify-between font-display text-sm font-semibold text-forest-900">
+        Part de la consommation à couvrir
+        <output id="sim-coverage-out" class="font-display text-lg text-leaf-600">70 %</output>
+      </label>
+      <input id="sim-coverage" type="range" min="30" max="100" step="5" value="70" class="range mt-4" />
+      <p class="mt-2 text-xs leading-relaxed text-ink/50">Sans batterie, 60 à 80 % est généralement optimal : le solaire produit le jour, et la loi 82-21 limite la revente d'excédent.</p>
+    </div>
+  </form>
+
+  <!-- Résultats -->
+  <div class="relative overflow-hidden bg-forest-900 p-6 text-white sm:p-10" aria-live="polite">
+    <div class="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-leaf-500/30 blur-3xl"></div>
+    <div class="pointer-events-none absolute -bottom-20 -left-10 h-60 w-60 rounded-full bg-sun-400/10 blur-3xl"></div>
+
+    <div class="relative flex flex-col items-center gap-6 sm:flex-row sm:items-center">
+      <!-- Jauge -->
+      <div class="relative h-48 w-48 shrink-0">
+        <svg viewBox="0 0 200 200" class="h-full w-full -rotate-[225deg]">
+          <circle cx="100" cy="100" r="86" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="14" stroke-dasharray="405 540" stroke-linecap="round" />
+          <circle data-gauge cx="100" cy="100" r="86" fill="none" stroke="url(#gaugeGrad)" stroke-width="14" stroke-dasharray="0 540" stroke-linecap="round" style="transition: stroke-dasharray 1s var(--ease-out-expo)" />
+          <defs>
+            <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#3cc157" />
+              <stop offset="100%" stop-color="#fbd34d" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span class="text-[11px] font-semibold uppercase tracking-[0.2em] text-leaf-300">Puissance</span>
+          <span class="font-display text-5xl font-semibold leading-none" data-out="kwc">0</span>
+          <span class="mt-1 font-display text-sm text-white/60">kWc</span>
+        </div>
+      </div>
+      <div class="text-center sm:text-left">
+        <p class="text-sm text-white/60">Installation recommandée</p>
+        <p class="mt-1 font-display text-2xl font-semibold leading-snug">
+          <span data-out="panels">0</span> panneaux de 580 Wc
+        </p>
+        <p class="mt-1 text-sm text-white/60">≈ <span data-out="area">0</span> m² de toiture ou de terrain</p>
+        <p class="mt-3 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">
+          <Icon name="bolt" class="h-3.5 w-3.5 text-sun-400" /> Consommation estimée : <strong class="text-white"><span data-out="monthlyKwh">0</span> kWh/mois</strong>
+        </p>
+      </div>
+    </div>
+
+    <div class="relative mt-8 grid grid-cols-2 gap-3">
+      <div class="rounded-2xl bg-white/[0.06] p-4 ring-1 ring-white/10">
+        <p class="text-xs text-white/55">Production annuelle</p>
+        <p class="mt-1 font-display text-xl font-semibold"><span data-out="production">0</span> <span class="text-sm text-white/50">kWh</span></p>
+      </div>
+      <div class="rounded-2xl bg-leaf-500/20 p-4 ring-1 ring-leaf-400/30">
+        <p class="text-xs text-leaf-200">Économies estimées</p>
+        <p class="mt-1 font-display text-xl font-semibold"><span data-out="savingsYear">0</span> <span class="text-sm text-white/60">MAD/an</span></p>
+      </div>
+      <div class="rounded-2xl bg-white/[0.06] p-4 ring-1 ring-white/10">
+        <p class="text-xs text-white/55">Investissement indicatif</p>
+        <p class="mt-1 font-display text-lg font-semibold"><span data-out="cost">0</span> <span class="text-sm text-white/50">MAD</span></p>
+      </div>
+      <div class="rounded-2xl bg-white/[0.06] p-4 ring-1 ring-white/10">
+        <p class="text-xs text-white/55">Retour sur investissement</p>
+        <p class="mt-1 font-display text-lg font-semibold"><span data-out="payback">0</span> <span class="text-sm text-white/50">ans</span></p>
+      </div>
+    </div>
+
+    <!-- Production mensuelle -->
+    <div class="relative mt-8">
+      <div class="flex items-baseline justify-between">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">Production mensuelle estimée</p>
+        <p class="text-xs text-white/50"><Icon name="leaf" class="mr-1 inline h-3.5 w-3.5 text-leaf-400" /><span data-out="co2">0</span> t CO₂ évitées/an</p>
+      </div>
+      <div class="mt-4 flex h-28 items-end gap-1.5" data-bars>
+        {MONTHS.map((m) => (
+          <div class="group flex h-full flex-1 flex-col items-center justify-end gap-1.5">
+            <div class="relative w-full flex-1">
+              <div class="bar absolute inset-x-0 bottom-0 rounded-t-md bg-gradient-to-t from-leaf-500 to-leaf-300 transition-[height] duration-700 ease-out-expo group-hover:from-sun-500 group-hover:to-sun-300" style="height:0%">
+                <span class="bar-tip pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-white px-1.5 py-0.5 text-[10px] font-semibold text-forest-900 opacity-0 transition group-hover:opacity-100"></span>
+              </div>
+            </div>
+            <span class="text-[10px] text-white/45">{m}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <a data-cta href="/contact/" class="btn btn-primary relative mt-8 w-full">
+      Recevoir mon étude personnalisée gratuite
+      <Icon name="arrow" class="h-4 w-4" />
+    </a>
+    <p class="relative mt-3 text-center text-[11px] leading-relaxed text-white/40">
+      Estimation indicative, non contractuelle. <a href="/simulateur/#hypotheses" class="underline decoration-white/30 underline-offset-2 hover:text-white">Voir les hypothèses</a>.
+    </p>
+  </div>
+</div>
+
+<style>
+  .sim:has(input[value='pro']:checked) .seg-pill { transform: translateX(100%); }
+  .sim:has(input[value='pro']:checked) .pro-only { display: block; }
+  label:has(input:checked) { color: var(--color-forest-900); }
+  label:has(input:not(:checked)) { color: rgb(12 26 18 / 0.5); }
+  label:has(input:focus-visible) { outline: 2px solid var(--color-leaf-500); outline-offset: 2px; }
+</style>
+
+<script>
+  import { simulate } from '../data/simulator';
+
+  const MIN = 100, MAX = 100000;
+  const toBill = (t: number) => Math.round((MIN * Math.pow(MAX / MIN, t / 1000)) / 10) * 10;
+  const toSlider = (b: number) => Math.round((1000 * Math.log(Math.max(MIN, Math.min(MAX, b)) / MIN)) / Math.log(MAX / MIN));
+  const nf = (d = 0) => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+  function animateNumber(el: HTMLElement, to: number, decimals = 0) {
+    const from = Number(el.dataset.v ?? 0);
+    el.dataset.v = String(to);
+    const start = performance.now();
+    const dur = 650;
+    const step = (now: number) => {
+      const p = Math.min(1, (now - start) / dur);
+      const e = 1 - Math.pow(1 - p, 3);
+      el.textContent = nf(decimals).format(from + (to - from) * e);
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  function setFill(r: HTMLInputElement) {
+    const p = ((Number(r.value) - Number(r.min)) / (Number(r.max) - Number(r.min))) * 100;
+    r.style.setProperty('--fill', `${p}%`);
+  }
+
+  function initSim() {
+    document.querySelectorAll<HTMLElement>('[data-sim]').forEach((root) => {
+      if (root.dataset.ready) return;
+      root.dataset.ready = '1';
+      const bill = root.querySelector<HTMLInputElement>('#sim-bill')!;
+      const billRange = root.querySelector<HTMLInputElement>('#sim-bill-range')!;
+      const price = root.querySelector<HTMLInputElement>('#sim-price')!;
+      const region = root.querySelector<HTMLSelectElement>('#sim-region')!;
+      const coverage = root.querySelector<HTMLInputElement>('#sim-coverage')!;
+      const coverageOut = root.querySelector<HTMLOutputElement>('#sim-coverage-out')!;
+      const gauge = root.querySelector<SVGCircleElement>('[data-gauge]')!;
+      const bars = Array.from(root.querySelectorAll<HTMLElement>('[data-bars] .bar'));
+      const cta = root.querySelector<HTMLAnchorElement>('[data-cta]')!;
+      const out = (k: string) => root.querySelector<HTMLElement>(`[data-out="${k}"]`)!;
+
+      const params = new URLSearchParams(location.search);
+      if (params.get('facture')) bill.value = params.get('facture')!;
+      billRange.value = String(toSlider(Number(bill.value)));
+
+      const run = () => {
+        const profile = (root.querySelector<HTMLInputElement>('input[name="profile"]:checked')?.value ?? 'residentiel') as 'residentiel' | 'pro';
+        const r = simulate({
+          bill: Math.max(0, Number(bill.value) || 0),
+          profile,
+          proPrice: Math.max(0.3, Number(price.value) || 1.07),
+          yieldKwhPerKwc: Number(region.value),
+          coverage: Number(coverage.value) / 100,
+        });
+        coverageOut.textContent = `${coverage.value} %`;
+        setFill(coverage);
+        setFill(billRange);
+
+        animateNumber(out('kwc'), r.kwc, r.kwc < 10 ? 1 : 0);
+        animateNumber(out('panels'), r.kwc > 0 ? r.panels : 0);
+        animateNumber(out('area'), r.area);
+        animateNumber(out('monthlyKwh'), r.monthlyKwh);
+        animateNumber(out('production'), r.production);
+        animateNumber(out('savingsYear'), r.savingsYear);
+        animateNumber(out('co2'), r.co2Tons, 1);
+        out('cost').textContent = r.kwc > 0 ? `${nf().format(Math.round(r.costMin / 1000) * 1000)} – ${nf().format(Math.round(r.costMax / 1000) * 1000)}` : '0';
+        out('payback').textContent = r.kwc > 0 ? `${nf(1).format(r.paybackMin)} – ${nf(1).format(r.paybackMax)}` : '–';
+
+        // Jauge : échelle logarithmique de 1 à 500 kWc
+        const g = r.kwc <= 0 ? 0 : Math.min(1, Math.max(0.04, Math.log(1 + r.kwc) / Math.log(501)));
+        gauge.setAttribute('stroke-dasharray', `${405 * g} 540`);
+
+        const maxM = Math.max(...r.monthly, 1);
+        bars.forEach((b, i) => {
+          b.style.height = `${(r.monthly[i] / maxM) * 100}%`;
+          const tip = b.querySelector('.bar-tip');
+          if (tip) tip.textContent = `${nf().format(r.monthly[i])} kWh`;
+        });
+
+        const q = new URLSearchParams({ kwc: r.kwc.toFixed(1), facture: String(bill.value), profil: profile });
+        cta.href = `/contact/?${q.toString()}`;
+      };
+
+      bill.addEventListener('input', () => { billRange.value = String(toSlider(Number(bill.value))); run(); });
+      billRange.addEventListener('input', () => { bill.value = String(toBill(Number(billRange.value))); run(); });
+      [price, region, coverage].forEach((el) => el.addEventListener('input', run));
+      root.querySelectorAll('input[name="profile"]').forEach((el) => el.addEventListener('change', run));
+      run();
+    });
+  }
+  document.addEventListener('astro:page-load', initSim);
+</script>

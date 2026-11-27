@@ -1,0 +1,52 @@
+---
+import Icon from './Icon.astro';
+const faqs = [
+  {
+    q: 'Combien coûte une installation solaire au Maroc ?',
+    a: "Le prix dépend de la puissance, du type de structure et du matériel choisi. À titre indicatif, une installation résidentielle raccordée au réseau se situe autour de 7 000 à 11 000 MAD par kWc posé, et le coût au kWc baisse pour les grandes installations. Notre simulateur donne un premier ordre de grandeur, et notre devis détaillé est gratuit.",
+  },
+  {
+    q: 'En combien de temps mon installation est-elle rentabilisée ?',
+    a: "Avec l'ensoleillement marocain, une installation bien dimensionnée est en général amortie en quelques années, alors que les panneaux produisent pendant 25 à 30 ans. Le délai exact dépend de votre tarif d'électricité et de la part de production que vous consommez directement.",
+  },
+  {
+    q: "Puis-je revendre mon surplus d'électricité ?",
+    a: "La loi 82-21 relative à l'autoproduction autorise l'injection des excédents sur le réseau, dans la limite de 20 % de la production annuelle selon le décret d'application publié en 2026. L'ANRE a fixé les tarifs de rachat pour la moyenne et la haute tension, ceux de la basse tension (particuliers) restant à préciser. Nous dimensionnons donc d'abord pour l'autoconsommation.",
+  },
+  {
+    q: 'Faut-il des batteries ?',
+    a: "Pas nécessairement. Pour un site raccordé au réseau, l'autoconsommation sans batterie est souvent la plus rentable. Les batteries deviennent pertinentes pour les sites isolés, les coupures fréquentes ou pour décaler la consommation le soir.",
+  },
+  {
+    q: 'Le pompage solaire fonctionne-t-il sans batterie ?',
+    a: "Oui. La pompe fonctionne au fil du soleil et l'eau est stockée dans un bassin ou un réservoir : c'est l'eau qui sert de stockage. Le système remplace avantageusement le gasoil ou le butane et des aides agricoles peuvent s'appliquer selon les conditions en vigueur.",
+  },
+  {
+    q: "Quel entretien prévoir ?",
+    a: "Principalement le nettoyage régulier des panneaux (poussière, sable) et un contrôle électrique annuel. Nous proposons des contrats de maintenance avec suivi de production à distance.",
+  },
+];
+---
+<div class="space-y-3">
+  {faqs.map((f, i) => (
+    <details class="faq group card overflow-hidden transition-colors open:border-leaf-500/40" data-reveal style={`--delay:${i * 60}ms`} name="faq">
+      <summary class="flex cursor-pointer items-center justify-between gap-6 p-6 font-display text-lg font-semibold text-forest-900">
+        {f.q}
+        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-leaf-50 text-leaf-600 transition duration-500 group-open:rotate-45 group-open:bg-leaf-500 group-open:text-white">
+          <Icon name="plus" class="h-5 w-5" />
+        </span>
+      </summary>
+      <div class="faq-body px-6 pb-6 leading-relaxed text-ink/70">{f.a}</div>
+    </details>
+  ))}
+</div>
+
+<style>
+  details.faq::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition: block-size 0.5s var(--ease-out-expo), content-visibility 0.5s allow-discrete;
+  }
+  details.faq[open]::details-content { block-size: auto; }
+  details.faq { interpolate-size: allow-keywords; }
+</style>

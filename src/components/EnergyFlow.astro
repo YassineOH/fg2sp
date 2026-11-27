@@ -1,0 +1,135 @@
+---
+import Icon from './Icon.astro';
+/* Illustration animée : soleil → panneaux → onduleur → usages */
+const cols = 6;
+const rows = 3;
+// Quadrilatère du champ solaire (perspective)
+const A = [60, 300], B = [128, 212], C = [318, 212], D = [262, 300];
+const lerp = (p: number[], q: number[], t: number) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+const colLines = Array.from({ length: cols - 1 }, (_, i) => {
+  const t = (i + 1) / cols;
+  return [lerp(A, D, t), lerp(B, C, t)];
+});
+const rowLines = Array.from({ length: rows - 1 }, (_, i) => {
+  const t = (i + 1) / rows;
+  return [lerp(A, B, t), lerp(D, C, t)];
+});
+const targets = [
+  { id: 'house', x: 452, y: 128, icon: 'home', label: 'Habitat', path: 'M352 330 C 400 330, 395 128, 430 128' },
+  { id: 'pump', x: 466, y: 262, icon: 'pump', label: 'Pompage', path: 'M352 334 C 400 334, 410 262, 444 262' },
+  { id: 'light', x: 446, y: 396, icon: 'light', label: 'Éclairage', path: 'M352 338 C 392 338, 390 396, 424 396' },
+];
+---
+<div class="relative mx-auto w-full max-w-[560px]" data-tilt style="transition: transform .4s var(--ease-out-expo)">
+  <svg viewBox="0 0 520 460" class="w-full overflow-visible" role="img" aria-label="Schéma animé : le soleil alimente des panneaux solaires, l'onduleur distribue l'énergie vers l'habitat, le pompage et l'éclairage">
+    <defs>
+      <radialGradient id="sunCore" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#fff7d1" />
+        <stop offset="55%" stop-color="#fbd34d" />
+        <stop offset="100%" stop-color="#f5b81c" />
+      </radialGradient>
+      <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#fbd34d" stop-opacity=".55" />
+        <stop offset="100%" stop-color="#fbd34d" stop-opacity="0" />
+      </radialGradient>
+      <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#1b5d6b" />
+        <stop offset="100%" stop-color="#0b2d38" />
+      </linearGradient>
+      <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#fff" stop-opacity="0" />
+        <stop offset="50%" stop-color="#fff" stop-opacity=".35" />
+        <stop offset="100%" stop-color="#fff" stop-opacity="0" />
+      </linearGradient>
+      <clipPath id="panelClip">
+        <polygon points={[A, B, C, D].map((p) => p.join(',')).join(' ')} />
+      </clipPath>
+    </defs>
+
+    <!-- Soleil -->
+    <circle cx="96" cy="92" r="92" fill="url(#sunGlow)" class="animate-pulse-soft" style="transform-origin: 96px 92px" />
+    <g class="animate-spin-slow" style="transform-origin: 96px 92px">
+      {Array.from({ length: 12 }, (_, i) => (
+        <line x1="96" y1="34" x2="96" y2="18" stroke="#fbd34d" stroke-width="4" stroke-linecap="round" transform={`rotate(${i * 30} 96 92)`} opacity=".85" />
+      ))}
+    </g>
+    <circle cx="96" cy="92" r="40" fill="url(#sunCore)" />
+
+    <!-- Rayons vers les panneaux -->
+    {[[130, 125, 170, 222], [112, 135, 120, 250], [140, 110, 250, 220]].map(([x1, y1, x2, y2], i) => (
+      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#fbd34d" stroke-width="2" stroke-dasharray="4 8" class="animate-dash" style={`animation-duration:${1 + i * 0.3}s`} opacity=".7" />
+    ))}
+
+    <!-- Structure -->
+    <line x1="100" y1="300" x2="100" y2="338" stroke="#3cc157" stroke-opacity=".5" stroke-width="3" />
+    <line x1="230" y1="300" x2="230" y2="338" stroke="#3cc157" stroke-opacity=".5" stroke-width="3" />
+    <!-- Champ solaire -->
+    <polygon points={[A, B, C, D].map((p) => p.join(',')).join(' ')} fill="url(#panel)" stroke="#3cc157" stroke-width="2" />
+    {colLines.map(([p, q]) => <line x1={p[0]} y1={p[1]} x2={q[0]} y2={q[1]} stroke="#9be7ff" stroke-opacity=".28" stroke-width="1.2" />)}
+    {rowLines.map(([p, q]) => <line x1={p[0]} y1={p[1]} x2={q[0]} y2={q[1]} stroke="#9be7ff" stroke-opacity=".28" stroke-width="1.2" />)}
+    <g clip-path="url(#panelClip)">
+      <rect x="-80" y="200" width="70" height="120" fill="url(#shine)" transform="skewX(-25)">
+        <animate attributeName="x" values="-80;420" dur="4.5s" repeatCount="indefinite" />
+      </rect>
+    </g>
+
+    <!-- Câble champ → onduleur -->
+    <path id="toInverter" d="M262 300 C 290 330, 300 334, 322 334" stroke="#3cc157" stroke-width="2.5" fill="none" stroke-dasharray="6 6" class="animate-dash" />
+
+    <!-- Onduleur -->
+    <g>
+      <rect x="318" y="306" width="40" height="56" rx="10" fill="#0a5a31" stroke="#3cc157" stroke-width="2" />
+      <circle cx="338" cy="322" r="3.5" fill="#3cc157" class="animate-pulse-soft" style="transform-origin: 338px 322px" />
+      <g transform="translate(329 330)" class="text-leaf-300"><Icon name="bolt" class="" size={18} /></g>
+    </g>
+
+    <!-- Flux vers usages -->
+    {targets.map((t, i) => (
+      <g>
+        <path id={`flow-${t.id}`} d={t.path} stroke="#3cc157" stroke-opacity=".35" stroke-width="2" fill="none" />
+        <path d={t.path} stroke="#7ddc8f" stroke-width="2.5" fill="none" stroke-dasharray="6 10" class="animate-dash" style={`animation-duration:${1.2 + i * 0.25}s`} />
+        <circle r="4.5" fill="#fbd34d">
+          <animateMotion dur={`${2.2 + i * 0.4}s`} repeatCount="indefinite" begin={`${i * 0.5}s`}>
+            <mpath href={`#flow-${t.id}`} />
+          </animateMotion>
+        </circle>
+        <circle cx={t.x} cy={t.y} r="30" fill="#064a28" stroke="#3cc157" stroke-width="2" />
+        <circle cx={t.x} cy={t.y} r="30" fill="none" stroke="#3cc157" stroke-opacity=".5" class="animate-pulse-soft" style={`transform-origin:${t.x}px ${t.y}px; animation-delay:${i * 0.6}s`} stroke-width="8" />
+        <g transform={`translate(${t.x - 12} ${t.y - 12})`} class="text-white"><Icon name={t.icon} class="" size={24} /></g>
+        <text x={t.x} y={t.y + 50} text-anchor="middle" class="fill-white/80 font-display text-[13px] font-medium">{t.label}</text>
+      </g>
+    ))}
+  </svg>
+
+  <!-- Carte production live -->
+  <div class="absolute -left-2 bottom-2 hidden w-52 animate-float sm:block rounded-2xl border border-white/15 bg-white/10 p-4 text-white shadow-2xl backdrop-blur-xl sm:-left-6 sm:bottom-6" style="animation-delay:-2s">
+    <div class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-leaf-300">
+      <span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-leaf-400 opacity-75"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-leaf-400"></span></span>
+      Production en direct
+    </div>
+    <p class="mt-1.5 font-display text-3xl font-semibold"><span data-live-kw>8,42</span><span class="ml-1 text-base text-white/60">kW</span></p>
+    <div class="mt-2 flex h-8 items-end gap-[3px]" data-live-bars>
+      {Array.from({ length: 16 }, (_, i) => <span class="w-full rounded-sm bg-leaf-400/80 transition-all duration-700" style={`height:${30 + Math.sin(i / 2.5) * 25 + 30}%`}></span>)}
+    </div>
+    <p class="mt-1 text-[10px] text-white/50">Exemple d'installation de 10 kWc</p>
+  </div>
+</div>
+
+<script>
+  function initLive() {
+    const kw = document.querySelector<HTMLElement>('[data-live-kw]');
+    const bars = document.querySelectorAll<HTMLElement>('[data-live-bars] span');
+    if (!kw) return;
+    let v = 8.42;
+    const id = window.setInterval(() => {
+      if (!document.body.contains(kw)) return window.clearInterval(id);
+      v = Math.min(9.6, Math.max(7.2, v + (Math.random() - 0.5) * 0.35));
+      kw.textContent = v.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      bars.forEach((b, i) => {
+        if (i === bars.length - 1) b.style.height = `${(v / 10) * 100}%`;
+        else b.style.height = bars[i + 1].style.height;
+      });
+    }, 1400);
+  }
+  document.addEventListener('astro:page-load', initLive);
+</script>
