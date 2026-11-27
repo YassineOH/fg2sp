@@ -1,0 +1,16 @@
+---
+/* Vagues inspirées du logo : vert vif, vert forêt et vert clair */
+interface Props { class?: string; fill?: string }
+const { class: cls = '', fill = '#fafbf7' } = Astro.props;
+---
+<div class:list={['pointer-events-none absolute inset-x-0 bottom-0 overflow-hidden leading-none', cls]} aria-hidden="true">
+  <svg class="relative block h-[90px] w-[200%] animate-[marquee_30s_linear_infinite] sm:h-[140px]" viewBox="0 0 2880 140" preserveAspectRatio="none">
+    <path d="M0 90C240 30 480 30 720 70s480 60 720 20 480-60 720-20 480 60 720 20v50H0Z" fill="#12A02C" opacity=".9" />
+  </svg>
+  <svg class="absolute bottom-0 block h-[70px] w-[200%] animate-[marquee_22s_linear_infinite_reverse] sm:h-[110px]" viewBox="0 0 2880 110" preserveAspectRatio="none">
+    <path d="M0 60C300 10 500 100 720 60s420-60 720 0 500 50 720 0 420-60 720 0v50H0Z" fill="#3CC157" opacity=".85" />
+  </svg>
+  <svg class="absolute bottom-0 block h-[50px] w-full sm:h-[80px]" viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path d="M0 50C360 0 1080 0 1440 50v30H0Z" fill={fill} />
+  </svg>
+</div>

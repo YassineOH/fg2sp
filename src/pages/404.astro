@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+import LogoMark from '../components/LogoMark.astro';
+---
+<Base title="Page introuvable" overlayHeader>
+  <section class="grain relative grid min-h-[80vh] place-items-center overflow-hidden bg-forest-950 px-5 pt-24 text-center text-white">
+    <div class="grid-lines absolute inset-0"></div>
+    <div class="relative">
+      <LogoMark class="mx-auto h-20 w-20 animate-float" />
+      <p class="mt-6 font-display text-8xl font-semibold text-gradient">404</p>
+      <h1 class="mt-2 font-display text-3xl font-semibold">Cette page est à l'ombre.</h1>
+      <p class="mt-3 text-white/65">Elle n'existe pas ou a été déplacée.</p>
+      <a href="/" class="btn btn-primary mt-8">Retour au soleil</a>
+    </div>
+  </section>
+</Base>
