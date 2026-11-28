@@ -117,7 +117,7 @@ export const solutions: Solution[] = [
     title: 'Études & ingénierie',
     short:
       'Audit énergétique, étude de faisabilité et ingénierie de projets photovoltaïques de toute taille.',
-    long: "Fort d'une double expérience d'ingénieur et de manager dans le secteur solaire, notre fondateur vous aide à prendre la bonne décision technique et financière, du premier audit jusqu'au plan de financement.",
+    long: "Forts d'une solide expérience technique et commerciale dans le secteur solaire, nos ingénieurs vous aident à prendre la bonne décision technique et financière, du premier audit jusqu'au plan de financement.",
     points: [
       'Audit des factures et des courbes de charge',
       'Étude technico-économique et retour sur investissement',
