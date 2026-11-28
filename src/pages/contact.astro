@@ -23,7 +23,7 @@ const label = 'font-display text-sm font-semibold text-forest-900';
               <option value="autre">Autre / je ne sais pas encore</option>
             </select>
           </label>
-          <label class="block"><span class={label}>Facture mensuelle (MAD)</span><input name="facture" type="number" min="0" class={field} /></label>
+          <label class="block" data-bill-field><span class={label}>Facture mensuelle (MAD)</span><input name="facture" type="number" min="0" class={field} /></label>
           <label class="block sm:col-span-2"><span class={label}>Votre message</span><textarea name="message" rows="5" class={field} placeholder="Ex. : villa à Marrakech, toiture terrasse d'environ 80 m², facture de 1 500 MAD en été…"></textarea></label>
         </div>
         <input type="hidden" name="kwc" />
@@ -68,12 +68,21 @@ const label = 'font-display text-sm font-semibold text-forest-900';
     set('facture', p.get('facture'));
     set('solution', p.get('solution'));
     set('kwc', p.get('kwc'));
+    // Pas de facture mensuelle pour l'éclairage solaire
+    const billField = form.querySelector('[data-bill-field]');
+    const toggleBill = () => {
+      const hide = form.elements.solution.value === 'eclairage';
+      billField.classList.toggle('hidden', hide);
+      form.elements.facture.disabled = hide;
+    };
+    form.elements.solution.addEventListener('change', toggleBill);
     if (p.get('kwc')) {
       const note = document.getElementById('kwc-note');
       note.textContent = `Résultat du simulateur joint à votre demande : environ ${Number(p.get('kwc')).toLocaleString('fr-FR')} kWc.`;
       note.classList.remove('hidden');
       if (p.get('profil') === 'pro') set('solution', 'centrales');
     }
+    toggleBill();
     let channel = 'whatsapp';
     form.querySelectorAll('[data-channel]').forEach((b) => b.addEventListener('click', () => (channel = b.dataset.channel)));
     form.addEventListener('submit', (e) => {

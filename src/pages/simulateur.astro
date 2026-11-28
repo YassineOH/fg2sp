@@ -2,79 +2,13 @@
 import Base from '../layouts/Base.astro';
 import PageHero from '../components/PageHero.astro';
 import Simulator from '../components/Simulator.astro';
-import { REGIONS, PANEL_WP, M2_PER_KWC, CO2_KG_PER_KWH, COST_MAD_PER_KWC, TAX_RATE, DEFAULT_PRO_PRICE } from '../data/simulator';
-const tranches = [
-  ['0 – 100 kWh', '0,9010', 'Progressif'],
-  ['101 – 150 kWh', '1,0732', 'Progressif'],
-  ['151 – 210 kWh', '1,0732', 'Sélectif'],
-  ['211 – 310 kWh', '1,1676', 'Sélectif'],
-  ['311 – 510 kWh', '1,3817', 'Sélectif'],
-  ['> 510 kWh', '1,5958', 'Sélectif'],
-];
-const pct = (n: number) => `${Math.round(n * 100)} %`;
 ---
 <Base title="Simulateur solaire" description="Estimez gratuitement la puissance solaire (kWc) nécessaire à partir de votre facture d'électricité mensuelle, ainsi que votre production et vos économies au Maroc.">
   <PageHero eyebrow="Simulateur gratuit" title="Votre facture, convertie en kilowatts-crête." lead="En quelques secondes, estimez la puissance photovoltaïque adaptée à votre consommation, la production attendue dans votre région et les économies réalisables." />
 
-  <section class="relative -mt-20 pb-20 sm:-mt-28">
+  <section class="relative -mt-20 pb-24 sm:-mt-28 sm:pb-32">
     <div class="container-x relative z-10" data-reveal="zoom">
       <Simulator />
-    </div>
-  </section>
-
-  <section id="hypotheses" class="scroll-mt-24 pb-24 sm:pb-32">
-    <div class="container-x">
-      <div class="max-w-3xl">
-        <span class="eyebrow border-leaf-500/25 bg-leaf-50 text-leaf-700" data-reveal>Transparence</span>
-        <h2 class="mt-5 font-display text-4xl font-semibold leading-tight text-forest-900" data-split>Les hypothèses du calcul</h2>
-        <p class="mt-4 text-lg text-ink/65" data-reveal>Ce simulateur donne un ordre de grandeur. Seule une étude sur site (orientation, ombrages, courbe de charge) permet de dimensionner précisément votre installation.</p>
-      </div>
-
-      <div class="mt-12 grid gap-5 lg:grid-cols-2">
-        <div class="card p-7 sm:p-8" data-reveal>
-          <h3 class="font-display text-xl font-semibold text-forest-900">1. De la facture à la consommation</h3>
-          <p class="mt-3 leading-relaxed text-ink/70">
-            Pour les particuliers, nous appliquons la grille basse tension résidentielle de l'ONEE (prix hors taxes par kWh). Jusqu'à 150 kWh/mois, la facturation est progressive ; au-delà, toute la consommation est facturée au prix de la tranche atteinte. Nous retirons environ {pct(TAX_RATE)} de TVA et taxes du montant de la facture. Les redevances fixes et les grilles des régies et délégataires (Casablanca, Rabat, Tanger…) peuvent légèrement différer.
-          </p>
-          <div class="mt-5 overflow-x-auto rounded-2xl border border-forest-900/10">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-sand-100 font-display text-forest-900"><tr><th class="px-4 py-2.5">Consommation mensuelle</th><th class="px-4 py-2.5">MAD/kWh HT</th><th class="px-4 py-2.5">Mode</th></tr></thead>
-              <tbody class="divide-y divide-forest-900/5">
-                {tranches.map(([a, b, c]) => <tr><td class="px-4 py-2.5">{a}</td><td class="px-4 py-2.5 font-semibold tabular-nums">{b}</td><td class="px-4 py-2.5 text-ink/60">{c}</td></tr>)}
-              </tbody>
-            </table>
-          </div>
-          <p class="mt-4 text-sm text-ink/55">Professionnels et agriculteurs : prix moyen saisi par vos soins (par défaut {DEFAULT_PRO_PRICE.toLocaleString('fr-FR')} MAD/kWh, moyenne nationale relevée en juin 2025 par <a class="underline underline-offset-2 hover:text-leaf-600" href="https://www.globalpetrolprices.com/Morocco/electricity_prices/" target="_blank" rel="noopener">GlobalPetrolPrices</a>).</p>
-        </div>
-
-        <div class="card p-7 sm:p-8" data-reveal style="--delay:100ms">
-          <h3 class="font-display text-xl font-semibold text-forest-900">2. De la consommation aux kWc</h3>
-          <p class="mt-3 leading-relaxed text-ink/70">
-            Puissance (kWc) = consommation annuelle × part couverte ÷ productible de la région. Le productible représente l'énergie produite chaque année par kWc installé, avec des modules bien orientés (plein sud, inclinaison ≈ latitude) et environ 15 % de pertes système.
-          </p>
-          <div class="mt-5 grid grid-cols-2 gap-2 text-sm">
-            {REGIONS.map((r) => (
-              <div class="flex items-center justify-between gap-3 rounded-xl bg-sand-100/80 px-3.5 py-2.5">
-                <span class="text-ink/70">{r.label.split(' (')[0]}</span>
-                <span class="font-display font-semibold tabular-nums text-forest-900">{r.yield.toLocaleString('fr-FR')}</span>
-              </div>
-            ))}
-          </div>
-          <p class="mt-3 text-xs text-ink/50">kWh/kWc/an, valeurs indicatives arrondies, cohérentes avec les données d'irradiation de PVGIS et du Global Solar Atlas.</p>
-        </div>
-
-        <div class="card p-7 sm:p-8 lg:col-span-2" data-reveal>
-          <h3 class="font-display text-xl font-semibold text-forest-900">3. Autres paramètres</h3>
-          <ul class="mt-4 grid gap-x-10 gap-y-3 text-ink/70 sm:grid-cols-2">
-            <li><strong class="text-forest-900">Modules :</strong> {PANEL_WP} Wc, environ {M2_PER_KWC.toLocaleString('fr-FR')} m² de surface utile par kWc (espacements compris).</li>
-            <li><strong class="text-forest-900">Économies :</strong> production × prix moyen actuel de votre kWh (TTC), en supposant que la production est autoconsommée.</li>
-            <li><strong class="text-forest-900">Investissement :</strong> fourchette indicative de {COST_MAD_PER_KWC.min.toLocaleString('fr-FR')} à {COST_MAD_PER_KWC.max.toLocaleString('fr-FR')} MAD/kWc clé en main, hors stockage. Les grandes puissances sont généralement moins chères au kWc.</li>
-            <li><strong class="text-forest-900">CO₂ évité :</strong> facteur d'émission d'environ {CO2_KG_PER_KWH.toLocaleString('fr-FR')} kg CO₂/kWh pour le réseau marocain, encore très dépendant du charbon.</li>
-            <li><strong class="text-forest-900">Revente :</strong> non comptée. La loi 82-21 autorise l'injection de 20 % maximum de la production annuelle, à un tarif de rachat faible (0,18 à 0,21 MAD/kWh en MT/HT).</li>
-            <li><strong class="text-forest-900">Évolution des tarifs :</strong> non comptée. Une réforme de la tarification est annoncée par l'ANRE à l'horizon 2027.</li>
-          </ul>
-        </div>
-      </div>
     </div>
   </section>
 </Base>

@@ -1,29 +1,32 @@
 /**
- * Hypothèses du simulateur — toutes modifiables ici.
- * Sources et réserves : voir la section « Hypothèses » de la page /simulateur.
+ * Paramètres du simulateur — tous modifiables ici.
  */
 
-/** Grille ONEE basse tension résidentielle (MAD/kWh, hors taxes). */
+/** Majoration appliquée à la grille ONEE de référence (+45 %). */
+const PRICE_FACTOR = 1.45;
+const p = (n: number) => Math.round(n * PRICE_FACTOR * 10000) / 10000;
+
+/** Grille basse tension résidentielle (MAD/kWh, hors taxes), majorée de 45 %. */
 export const RESIDENTIAL_TRANCHES = {
   /** Tranches « sociales » progressives, si la consommation mensuelle ≤ 150 kWh */
   social: [
-    { upTo: 100, price: 0.901 },
-    { upTo: 150, price: 1.0732 },
+    { upTo: 100, price: p(0.901) },
+    { upTo: 150, price: p(1.0732) },
   ],
   /** Au-delà de 150 kWh/mois : tarification sélective, toute la consommation au prix de la tranche atteinte */
   selective: [
-    { from: 151, upTo: 210, price: 1.0732 },
-    { from: 211, upTo: 310, price: 1.1676 },
-    { from: 311, upTo: 510, price: 1.3817 },
-    { from: 511, upTo: Infinity, price: 1.5958 },
+    { from: 151, upTo: 210, price: p(1.0732) },
+    { from: 211, upTo: 310, price: p(1.1676) },
+    { from: 311, upTo: 510, price: p(1.3817) },
+    { from: 511, upTo: Infinity, price: p(1.5958) },
   ],
 };
 
 /** TVA et taxes appliquées sur la facture (ordre de grandeur). */
 export const TAX_RATE = 0.14;
 
-/** Prix moyen professionnel par défaut (MAD/kWh TTC) — GlobalPetrolPrices, juin 2025. */
-export const DEFAULT_PRO_PRICE = 1.07;
+/** Prix moyen professionnel par défaut (MAD/kWh TTC), majoré de 45 %. */
+export const DEFAULT_PRO_PRICE = Math.round(1.07 * PRICE_FACTOR * 100) / 100;
 
 /** Productible spécifique indicatif (kWh produits par kWc installé et par an). */
 export const REGIONS = [
@@ -43,16 +46,24 @@ export const REGIONS = [
 export const MONTHLY_PROFILE = [0.062, 0.068, 0.085, 0.092, 0.101, 0.104, 0.106, 0.098, 0.086, 0.076, 0.065, 0.057];
 export const MONTHS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 
-export const PANEL_WP = 580; // module bifacial de dernière génération
+/** Puissance du module retenu : 595 Wc sous 15 kWc, 710 Wc au-delà. */
+export const panelWp = (kwc: number) => (kwc < 15 ? 595 : 710);
 export const M2_PER_KWC = 5.5; // surface de toiture utile, espacements compris
 export const CO2_KG_PER_KWH = 0.7; // facteur d'émission indicatif du réseau marocain
-export const COST_MAD_PER_KWC = { min: 7000, max: 11000 }; // fourchette indicative clé en main
+/** Fourchette indicative clé en main (MAD/Wc) selon la puissance installée. */
+export function costMadPerWc(kwc: number) {
+  if (kwc < 10) return { min: 7, max: 11 };
+  if (kwc < 20) return { min: 6, max: 10 };
+  if (kwc <= 50) return { min: 5, max: 9 };
+  return { min: 4, max: 8 };
+}
 
 /** Prix HT de l'énergie pour une consommation mensuelle donnée (résidentiel). */
 export function residentialCostHT(kwh: number): number {
   if (kwh <= 150) {
-    const t1 = Math.min(kwh, 100) * 0.901;
-    const t2 = Math.max(0, kwh - 100) * 1.0732;
+    const [s1, s2] = RESIDENTIAL_TRANCHES.social;
+    const t1 = Math.min(kwh, 100) * s1.price;
+    const t2 = Math.max(0, kwh - 100) * s2.price;
     return t1 + t2;
   }
   const tranche = RESIDENTIAL_TRANCHES.selective.find((t) => kwh <= t.upTo)!;
@@ -64,9 +75,10 @@ export function residentialKwhFromBill(billTTC: number): number {
   const ht = billTTC / (1 + TAX_RATE);
   if (ht <= 0) return 0;
   // Tranches sociales (progressives)
-  if (ht <= 100 * 0.901) return ht / 0.901;
+  const [s1, s2] = RESIDENTIAL_TRANCHES.social;
+  if (ht <= 100 * s1.price) return ht / s1.price;
   const socialMax = residentialCostHT(150);
-  if (ht <= socialMax) return 100 + (ht - 100 * 0.901) / 1.0732;
+  if (ht <= socialMax) return 100 + (ht - 100 * s1.price) / s2.price;
   // Tranches sélectives
   let previousUpTo = 150;
   for (const t of RESIDENTIAL_TRANCHES.selective) {
@@ -77,7 +89,7 @@ export function residentialKwhFromBill(billTTC: number): number {
     }
     previousUpTo = t.upTo;
   }
-  return ht / 1.5958;
+  return ht / RESIDENTIAL_TRANCHES.selective[RESIDENTIAL_TRANCHES.selective.length - 1].price;
 }
 
 export type SimInput = {
@@ -95,10 +107,12 @@ export function simulate(input: SimInput) {
   const targetKwh = annualKwh * input.coverage;
   const kwc = targetKwh / input.yieldKwhPerKwc;
   const production = kwc * input.yieldKwhPerKwc;
-  const panels = Math.max(1, Math.ceil((kwc * 1000) / PANEL_WP));
+  const panelPower = panelWp(kwc);
+  const panels = Math.max(1, Math.ceil((kwc * 1000) / panelPower));
+  const unitCost = costMadPerWc(kwc);
   const savings = production * avgPrice;
-  const costMin = kwc * COST_MAD_PER_KWC.min;
-  const costMax = kwc * COST_MAD_PER_KWC.max;
+  const costMin = kwc * 1000 * unitCost.min;
+  const costMax = kwc * 1000 * unitCost.max;
   return {
     monthlyKwh,
     annualKwh,
@@ -106,6 +120,7 @@ export function simulate(input: SimInput) {
     kwc,
     production,
     panels,
+    panelPower,
     area: kwc * M2_PER_KWC,
     savingsYear: savings,
     savingsMonth: savings / 12,

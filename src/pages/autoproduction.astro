@@ -15,12 +15,6 @@ const facts = [
   { value: '0,18', unit: 'MAD/kWh', label: "tarif d'achat de l'excédent hors heures de pointe (MT/HT)" },
   { value: '3 886', unit: 'MW', label: "de capacité d'accueil réseau ouverte à l'autoproduction (72 % solaire, 28 % éolien)" },
 ];
-const sources = [
-  { label: 'pv magazine — Morocco finally unlocks solar self-consumption (20 mars 2026)', href: 'https://www.pv-magazine.com/2026/03/20/morocco-finally-unlocks-solar-self%E2%80%91consumption/' },
-  { label: 'pv magazine — Morocco sets net-metering tariffs for high and medium-voltage systems (23 février 2026)', href: 'https://www.pv-magazine.com/2026/02/23/morocco-sets-net%e2%80%91metering-tariffs-for-high-and-medium%e2%80%91voltage-systems/' },
-  { label: 'Médias24 — Après trois ans d’attente, le Maroc débloque enfin l’autoproduction (18 mars 2026)', href: 'https://medias24.com/2026/03/18/electricite-apres-trois-ans-dattente-le-maroc-debloque-enfin-lautoproduction-1645705/' },
-  { label: 'Adala (ministère de la Justice) — Dahir n° 1-23-21 portant promulgation de la loi n° 82-21', href: 'https://adala.justice.gov.ma/' },
-];
 ---
 <Base title="Loi 82-21 : l'autoproduction au Maroc" description="Loi 82-21 sur l'autoproduction d'électricité au Maroc : décret d'application 2026, revente de l'excédent (20 %), tarifs ANRE. Le guide FG2SP Energie.">
   <PageHero eyebrow="Guide · Loi 82-21" title="Autoproduction : ce que la loi 82-21 change pour vous." lead="Produire sa propre électricité solaire, la consommer et revendre une partie de l'excédent : le cadre est enfin opérationnel. Voici l'essentiel, mis à jour en novembre 2026." />
@@ -64,8 +58,8 @@ const sources = [
   </section>
 
   <section class="bg-sand-100/70 py-20">
-    <div class="container-x grid gap-10 lg:grid-cols-2">
-      <div data-reveal>
+    <div class="container-x">
+      <div class="max-w-3xl" data-reveal>
         <h2 class="font-display text-3xl font-semibold text-forest-900">Ce que nous prenons en charge</h2>
         <ul class="mt-6 space-y-3 text-ink/75">
           {['Étude de faisabilité et dimensionnement optimal', 'Constitution du dossier de raccordement auprès du gestionnaire de réseau', 'Choix du régime applicable selon la puissance et le niveau de tension', 'Installation, mise en service et suivi de la production'].map((x) => (
@@ -73,13 +67,7 @@ const sources = [
           ))}
         </ul>
         <a href="/contact/" class="btn btn-primary mt-8">Être accompagné<Icon name="arrow" class="h-4 w-4" /></a>
-      </div>
-      <div class="card p-7" data-reveal style="--delay:100ms">
-        <h3 class="font-display text-lg font-semibold text-forest-900">Sources</h3>
-        <ul class="mt-4 space-y-3 text-sm">
-          {sources.map((s) => <li><a href={s.href} target="_blank" rel="noopener" class="text-ink/70 underline decoration-forest-900/20 underline-offset-4 transition hover:text-leaf-600">{s.label}</a></li>)}
-        </ul>
-        <p class="mt-5 text-xs leading-relaxed text-ink/50">Informations fournies à titre indicatif, à jour en novembre 2026. Les textes réglementaires et arrêtés de l'ANRE font foi.</p>
+        <p class="mt-6 text-xs leading-relaxed text-ink/50">Informations fournies à titre indicatif, à jour en novembre 2026. Les textes réglementaires et arrêtés de l'ANRE font foi.</p>
       </div>
     </div>
   </section>
